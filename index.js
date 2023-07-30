@@ -10,20 +10,24 @@ const GameInfo = require('./GameInfoManager');
 const rpc = new DiscordRPC.Client({transport: 'ipc'});
 const {clientId} = require('./config.json');
 const {DeckEncoder} = require('runeterra');
+const {callLocalAPI} = require("./GameInfoManager");
 
 async function setActivity() {
-    const GameState = await GameInfo.callLocalAPI('positional-rectangles').then(r => {return r['GameState']});
+    const positionalRectangles =  await fetch('http://127.0.0.1:21337/positional-rectangles').then(r=> r.json() ).catch((e => { console.log('Local Api not found! Is the game running?'); throw new Error(e); }));
+    const staticDeckList = await fetch('http://127.0.0.1:21337/static-decklist').then(r=> r.json()).catch((e => { console.log('Local Api not found! Is the game running?'); throw new Error(e); }));
 
+    console.log(await getDeckChampions('CUCQCAYJEMAQICINAECQSCADAYFBUHZMAUDASEARDUPSGAYBAMERWAIGBEEACBQMAEAQCBQJF4'));
+
+    const GameState = positionalRectangles['GameState'];
     if (GameState === 'InProgress') {
-        let GameMode;
-        let champions
-        if (await GameInfo.callLocalAPI('static-decklist').then(r => {return r['DeckCode']}) === null && GameInfo.callLocalAPI('static-decklist').then(r => {return r['CardsInDeck']}) !== null) {
-            GameMode = 'Path of Champions'
+        let GameMode = 'Standard (Ranked)';
+        let champions = await getDeckChampions(staticDeckList['DeckCode']);
+        if (await staticDeckList['DeckCode'] === null && staticDeckList['CardsInDeck'] !== null) {
+            GameMode = 'Path of Champions';
             champions = 'WORK IN PROGRESS';
-        } else champions = await getDeckChampions(await GameInfo.callLocalAPI('static-decklist').then(r => {return r['DeckCode']}));
+        }
 
-
-        rpc.setActivity({
+        await rpc.setActivity({
             details: 'Playing: ' + GameMode,
             state: 'Deck Champions: WORK IN PROGRESS',
             largeImageKey: '01fr009',
@@ -33,7 +37,7 @@ async function setActivity() {
     } else {
         const GameResult = await GameInfo.callLocalAPI('game-result').then(r => {return r['GameID']});
 
-        rpc.setActivity({
+        await rpc.setActivity({
             details: 'In Menu',
             state: 'Games played: ' + (GameResult + 1),
             startTimestamp: 0,
@@ -43,25 +47,32 @@ async function setActivity() {
 }
 
 async function getDeckChampions(deckCode) {
-    let champions = [];
+    let filteredChampionData = [];
     const deck = DeckEncoder.decode(deckCode);
-    for (let index = 0; index < deck.length; index++) {
-        const e = deck[index]
-        let set = e.code.slice(1, 2);
-
-        // TODO: Find a better solution, what is this???
-        let t = await GameInfo.callSetData(set).then(r => {return r.filter(r => r.rarity === 'Champion' && r.cardCode === e.code)});
-        if (set === '6' && t.length === 0) {
-            t = await GameInfo.callSetData(set + 'cde').then(r => {return r.filter(r => r.rarity === 'Champion' && r.cardCode === e.code)});
-        } else if (set === '7' && t.length === 0) {
-            t = await GameInfo.callSetData(set + 'b').then(r => {return r.filter(r => r.rarity === 'Champion' && r.cardCode === e.code)});
-        }
-        if (t.length !== 0) champions.push(t);
-
-
+    for (let i = 0; i < deck.length; i++) {
+        let championData = await callSetData(6);
+        if (championData.length !== 0) filteredChampionData.push(championData);
     }
-    return champions;
+
+    return filteredChampionData;
 }
+
+async function callSetData(set) {
+    let response = [];
+    let data = await fetch('https://dd.b.pvp.net/latest/set' + set + '/en_us/data/set' + set + '-en_us.json').then(r => r.json());
+    response.push(data[0]);
+
+    if (set === 6) {
+        let set6cde = await fetch('https://dd.b.pvp.net/latest/set6cde/en_us/data/set6cde-en_us.json').then(r => r.json());
+        response.push(set6cde[0]);
+    } else if (set === 7) {
+        let set7b = await fetch('https://dd.b.pvp.net/latest/set7b/en_us/data/set7b-en_us.json').then(r => r.json());
+        response.push(set7b[0]);
+    }
+    return response;
+}
+
+
 
 rpc.on('ready', () => {
     setActivity();
@@ -71,4 +82,5 @@ rpc.on('ready', () => {
     }, 15e3);
 });
 
-rpc.login({clientId: clientId}).catch(console.error);
+setActivity();
+//rpc.login({clientId: clientId}).catch(console.error);
