@@ -9,17 +9,22 @@ async function setActivity() {
     const gameResult = await fetch('http://127.0.0.1:21337/game-result').then(r=> r.json());
 
     const GameState = positionalRectangles['GameState'];
-    let champions = await getChampions(staticDeckList['DeckCode']);
     if (GameState === 'InProgress') {
-        let GameMode = 'Standard (Ranked)';
-        if (staticDeckList['DeckCode'] === null && staticDeckList['CardsInDeck'] !== null) {
-            GameMode = 'Path of Champions';
-        } else {
-            champions = champions[0][0]['name'] + ' and ' + champions[1][0]['name'];
+        let championName;
+        let champions = await getChampions(staticDeckList['DeckCode']);
+        let GameMode = ' against ' + positionalRectangles['OpponentName'];
+        if (staticDeckList['CardsInDeck'] !== null) {
+            if (staticDeckList['DeckCode'] === null) GameMode = ': Path of Champions';
+            if (positionalRectangles['OpponentName'].startsWith('deck_')) GameMode = ' against AI';
+            for (let champion of champions) {
+                if (championName) championName += ', ' + champion[0]['name'];
+                else championName = champion[0]['name'];
         }
+    }
+
         await rpc.setActivity({
-            details: 'Playing: ' + GameMode,
-            state: 'Champions: ' + champions,
+            details: 'Playing' + GameMode,
+            state: 'Champions: ' + championName,
             largeImageKey: '01fr009',
             smallImageKey: 'Verto',
             startTimestamp: 0,
@@ -38,18 +43,15 @@ async function setActivity() {
 
 async function getChampions(deckCode = null) {
     let filteredChampionData = [];
-    if (deckCode != null) {
-    const deck = DeckEncoder.decode(deckCode);
-        for (let i = 0; i < deck.length; i++) {
-            let championData = await fetch('https://dd.b.pvp.net/latest/set' + deck[i].set + '/en_us/data/set' + deck[i].set + '-en_us.json').then(r => r.json().then(r => r.filter(r => r.rarity === 'Champion' && r.cardCode === deck[i].code)))
-            if (championData.length === 0) {
-                if (deck[i].set === 6) championData = await fetch('https://dd.b.pvp.net/latest/set' + deck[i].set + 'cde/en_us/data/set' + deck[i].set + 'cde-en_us.json').then(r => r.json().then(r => r.filter(r => r.rarity === 'Champion' && r.cardCode === deck[i].code)))
-                if (deck[i].set === 7) championData = await fetch('https://dd.b.pvp.net/latest/set' + deck[i].set + 'b/en_us/data/set' + deck[i].set + 'b-en_us.json').then(r => r.json().then(r => r.filter(r => r.rarity === 'Champion' && r.cardCode === deck[i].code)))
-            }
-            if (championData.length !== 0) filteredChampionData.push(championData);
+    const staticDeckList = await fetch('http://127.0.0.1:21337/static-decklist').then(r=> r.json());
+    for (let key of Object.keys(staticDeckList['CardsInDeck'])) {
+        let set = key.substring(1,2);
+        let championData = await fetch('https://dd.b.pvp.net/latest/set' + set + '/en_us/data/set' + set + '-en_us.json').then(r => r.json().then(r => r.filter(r => r.rarity === 'Champion' && r.cardCode === key)))
+        if (championData.length === 0) {
+            if (set === '6') championData = await fetch('https://dd.b.pvp.net/latest/set' + set + 'cde/en_us/data/set' + set + 'cde-en_us.json').then(r => r.json().then(r => r.filter(r => r.rarity === 'Champion' && r.cardCode === key)))
+            if (set === '7') championData = await fetch('https://dd.b.pvp.net/latest/set' + set + 'b/en_us/data/set' + set + 'b-en_us.json').then(r => r.json().then(r => r.filter(r => r.rarity === 'Champion' && r.cardCode === key)))
         }
-    } else {
-        filteredChampionData = 'WORK IN PROGRESS';
+        if (championData.length !== 0) filteredChampionData.push(championData);
     }
     return filteredChampionData;
 }
