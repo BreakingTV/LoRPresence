@@ -6,7 +6,7 @@ You need to have Node.js
 
 Right now I didn't set up an automatic start up, so you need to start it manually via Node.js
 - Clone this Project
-- create a Config.json and add a discord Application on it, name the Application "Legends of Runeterra"
+- create a config.json and add a discord Application on it, name the Application "Legends of Runeterra"
 - get the client ID and enter it in the config.json (like the example below)
 
 ![img.png](_public/img.png)
