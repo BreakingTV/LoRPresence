@@ -4,12 +4,14 @@ const {clientId, RGAPI, port} = require('./config.json');
 const {DeckEncoder} = require('runeterra');
 
 async function startup() {
+    /* Startup check */
     let platformData = await fetch('https://europe.api.riotgames.com/lor/status/v1/platform-data?api_key=' + RGAPI).then(r => r.json())
 
     if (fetch('http://127.0.0.1:' + port).then(r => r.ok)) console.log('Game is Running')
     else console.log("Game isn't Running, check if the Game is running or you have the right port in the config");
-    
+
     if (platformData['maintenances'].length === 0) console.log('No Maintenance found, continue')
+    else console.log("The Game is right now under Maintenance, or your API-Key isn't valid")
 }
 
 async function setActivity() {

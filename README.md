@@ -11,6 +11,8 @@ Right now I didn't set up an automatic start up, so you need to start it manuall
 
 ![img.png](_public/img.png)
 
+(if you use the project from the source code and not the releases tab, you need to add some extra values in the config file)
+
 - open your terminal in this directory and run the index.js (node index)
 
 If you do all these steps you are good to go, remember that the game should run when you use this, but I will probably fix this problem in the future.
@@ -18,9 +20,11 @@ If you do all these steps you are good to go, remember that the game should run 
 ## TO-DO
 - [x] In Menu Presence
 - [x] In Game Presence
+- [ ] check Data dragon
+- [x] Startup check (only source, not releases)
 - [ ] Presence Assets
 - [ ] Auto Run and Auto Setup
 
 
 ## Disclaimer
-This is one of my first stand alone JS projects, so ofcourse this code is trash, if you want to help and fix this mess, make a pull request. Thanks :)
+This is one of my first stand alone JS projects, so of course this code is trash, if you want to help and fix this mess, make a pull request. Thanks :)
