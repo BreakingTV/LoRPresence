@@ -13,7 +13,7 @@ Right now I didn't set up an automatic start up, so you need to start it manuall
 
 (if you use the project from the source code and not the releases tab, you need to add some extra values in the config file)
 
-- open your terminal in this directory and run the index.js (node index)
+- open your terminal in this directory and run the app.js (node index)
 
 If you do all these steps you are good to go, remember that the game should run when you use this, but I will probably fix this problem in the future.
 
