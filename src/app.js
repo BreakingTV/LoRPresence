@@ -2,7 +2,7 @@ const DiscordRPC = require('discord-rpc');
 const rpc = new DiscordRPC.Client({transport: 'ipc'});
 const {clientId, port} = require('../config/config.json');
 const { setActivity } = require('./components/RPC.js');
-const { pushData } = require("./components/getChampions");
+const { pushData } = require("./components/getCardData");
 
 rpc.on('ready', () => {
     //setActivity(rpc, port);

@@ -1,4 +1,4 @@
-const { getChampions } = require('./getChampions.js');
+const { getChampions } = require('./getCardData.js');
 async function setActivity(rpc, port) {
     try {
         await fetch('http://127.0.0.1:' + port);
