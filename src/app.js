@@ -2,10 +2,11 @@ const DiscordRPC = require('discord-rpc');
 const rpc = new DiscordRPC.Client({transport: 'ipc'});
 const {clientId, port} = require('../config/config.json');
 const { setActivity } = require('./components/activity.js');
+const {checkData} = require("./components/getCardData");
 
 rpc.on('ready', () => {
-    setActivity(rpc, port);
-    console.log('RPC started, enjoy!')
+    checkData().then(r => setActivity(rpc, port).then(r => console.log('RPC started, enjoy!')));
+
 
     setInterval(() => {
         setActivity(rpc, port);

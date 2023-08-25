@@ -11,6 +11,7 @@ async function setActivity(rpc, port) {
     const staticDeckList = await fetch('http://127.0.0.1:' + port + '/static-decklist').then(r=> r.json());
     const gameResult = await fetch('http://127.0.0.1:' + port + '/game-result').then(r=> r.json());
 
+
     const GameState = positionalRectangles['GameState'];
     if (GameState === 'InProgress') {
         let championName;
@@ -28,8 +29,11 @@ async function setActivity(rpc, port) {
             details: 'Playing' + GameMode,
             state: 'Champions: ' + championName
         });
+
     } else {
-        await rpc.setActivity({ details: 'In Menu' });
+        await rpc.setActivity({
+            details: 'In Menu'
+        });
     }
 }
 

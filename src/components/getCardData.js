@@ -1,8 +1,6 @@
 const fs = require('fs');
 
-const getChampions = async function (port) {
-    await checkData();
-
+async function getChampions(port){
     return await new Promise((res) => {
         let filteredChampionData = [];
         return fs.readFile('data.json', 'utf8', async (err, data) => {
@@ -81,4 +79,4 @@ async function getLatestSet() {
     return set;
 }
 
-module.exports = { getChampions }
+module.exports = { getChampions, checkData }
