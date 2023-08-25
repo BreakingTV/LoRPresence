@@ -1,26 +1,29 @@
 const fs = require('fs');
+const { port } = require('../../config/config.json');
 
-async function getChampions(port){
+async function getChampions(){
     return await new Promise((res) => {
         let filteredChampionData = [];
         return fs.readFile('data.json', 'utf8', async (err, data) => {
             const staticDeckList = await fetch('http://127.0.0.1:' + port + '/static-decklist').then(r => r.json());
-            for (let card of Object.keys(staticDeckList['CardsInDeck'])) {
-                let cardSet = card.substring(1, 2);
-                let JSONData = JSON.parse(data);
-                let championData;
+            if (staticDeckList['CardsInDeck'] !== null) {
+                for (let card of Object.keys(staticDeckList['CardsInDeck'])) {
+                    let cardSet = card.substring(1, 2);
+                    let JSONData = JSON.parse(data);
+                    let championData;
 
-                if (card === '7') championData = JSONData[8].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
-                else championData = JSONData[cardSet].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
+                    if (card === '7') championData = JSONData[8].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
+                    else championData = JSONData[cardSet].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
 
-                if (championData.length === 0) {
-                    if (cardSet === '6') championData = JSONData[7].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
-                    if (cardSet === '7') championData = JSONData[8].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
+                    if (championData.length === 0) {
+                        if (cardSet === '6') championData = JSONData[7].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
+                        if (cardSet === '7') championData = JSONData[8].filter(r => r['rarity'] === 'Champion' && r['cardCode'] === card)
+                    }
+                    //console.log(championData);
+                    if (championData.length !== 0) filteredChampionData.push(championData);
                 }
-                //console.log(championData);
-                if (championData.length !== 0) filteredChampionData.push(championData);
+                return res(filteredChampionData);
             }
-            return res(filteredChampionData);
         })
     });
 }
@@ -65,6 +68,7 @@ async function pushData() {
 
     /* TODO: Create Database and put the data in there */
     fs.writeFile('data.json', JSON.stringify(data), 'utf8', (err) => err);
+    console.log('New data.json updated and saved');
 }
 
 async function getLatestSet() {
