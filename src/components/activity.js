@@ -3,7 +3,7 @@ async function setActivity(rpc, port) {
     try {
         await fetch('http://127.0.0.1:' + port);
     } catch (err) {
-        throw new Error("Local API not found");
+        throw new Error("Local API not found // Game probably closed");
     }
 
 
@@ -18,7 +18,7 @@ async function setActivity(rpc, port) {
         if (staticDeckList['CardsInDeck'] !== null) {
             if (staticDeckList['DeckCode'] === null) GameMode = ': Path of Champions';
             if (positionalRectangles['OpponentName'].startsWith('deck')) GameMode = ' against AI';
-            for (let champion of await getChampions(staticDeckList['DeckCode'], port)) {
+            for (let champion of await getChampions(port)) {
                 if (championName) championName += ', ' + champion[0]['name'];
                 else championName = champion[0]['name'];
             }
