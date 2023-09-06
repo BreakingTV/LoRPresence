@@ -1,21 +1,17 @@
 const { getChampions } = require('./getCardData.js');
 const {getRegionImage, getLargeImage} = require("./getAssets");
+
 async function setActivity(rpc, port) {
-    try {
-        await fetch('http://127.0.0.1:' + port);
-    } catch (err) {
-        throw new Error("Local API not found // Game probably closed");
-    }
-
-
     const positionalRectangles =  await fetch('http://127.0.0.1:' + port +'/positional-rectangles').then(r=> r.json());
     const staticDeckList = await fetch('http://127.0.0.1:' + port + '/static-decklist').then(r=> r.json());
 
     const GameState = positionalRectangles['GameState'];
     const regionImage = (await getRegionImage(GameState)).toLowerCase();
     const largeImage = await getLargeImage();
+    let firstLoad;
 
     if (GameState === 'InProgress') {
+        firstLoad = true;
         let championName;
         let GameMode = ' against ' + positionalRectangles['OpponentName'];
         if (staticDeckList['CardsInDeck'] !== null) {
@@ -27,14 +23,16 @@ async function setActivity(rpc, port) {
             }
         }
 
-        await rpc.setActivity({
-            details: 'Playing' + GameMode,
-            state: 'Champions: ' + championName,
-            largeImageKey: largeImage,
-            smallImageKey: regionImage,
-        });
-
+        if (firstLoad === true) {
+            await rpc.setActivity({
+                details: 'Playing' + GameMode,
+                state: 'Champions: ' + championName,
+                largeImageKey: largeImage,
+                smallImageKey: regionImage,
+            });
+        }
     } else {
+        firstLoad = false;
         await rpc.setActivity({
             details: 'In Menu',
             largeImageKey: largeImage,
@@ -43,4 +41,4 @@ async function setActivity(rpc, port) {
     }
 }
 
-exports.setActivity = setActivity;
+module.exports = { setActivity };
